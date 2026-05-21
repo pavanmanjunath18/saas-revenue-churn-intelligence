@@ -7,11 +7,16 @@ from db import query
 from style import C
 
 st.set_page_config(
-    page_title="Revenue Intelligence",
+    page_title="SaaS Revenue Intelligence",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# ── Sidebar branding ──────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("**SaaS Revenue Intelligence**")
+    st.caption("Jan 2024 – Dec 2025 · Synthetic dataset")
 
 # ── Fetch summary stats ───────────────────────────────────────────────────────
 summary = query("""
@@ -32,7 +37,7 @@ risk   = risk_counts.set_index("risk_tier")["n"].to_dict()
 
 # ── Page header ───────────────────────────────────────────────────────────────
 st.title("SaaS Revenue & Churn Intelligence")
-st.caption("24-month simulation · 1,500 customers · PostgreSQL analytics layer · 8 SQL models")
+st.caption("B2B SaaS analytics platform · 24-month simulation · 1,500 customers · PostgreSQL · 8 SQL models")
 st.divider()
 
 # ── KPI metrics ───────────────────────────────────────────────────────────────
@@ -52,12 +57,14 @@ st.divider()
 
 # ── Navigation cards ──────────────────────────────────────────────────────────
 st.subheader("Dashboard Pages")
+st.caption("Use the sidebar to navigate between pages.")
+
 pages = [
-    ("📈 Revenue Overview",   "How is MRR/ARR trending? What are NRR and GRR?"),
-    ("🌊 MRR Waterfall",      "Where is revenue coming from and going to each month?"),
-    ("📉 Churn Analysis",     "Who is churning, when, and from which segments?"),
-    ("🔁 Cohort Retention",   "How long do cohorts retain at months 3, 6, 12, 24?"),
-    ("❤️ Customer Health",    "Which active customers are at churn risk right now?"),
+    ("📈 Revenue Overview",  "How is MRR/ARR trending? What are NRR and GRR?"),
+    ("🌊 MRR Waterfall",     "Where is revenue coming from and going to each month?"),
+    ("📉 Churn Analysis",    "Who is churning, when, and from which segments?"),
+    ("🔁 Cohort Retention",  "How long do cohorts retain at months 3, 6, and 12?"),
+    ("❤️  Customer Health",  "Which active customers are at churn risk right now?"),
 ]
 
 cols = st.columns(len(pages))
@@ -80,4 +87,7 @@ if high_risk > 0:
     )
 
 st.divider()
-st.caption("Data: synthetic B2B SaaS simulation · Stack: Python · PostgreSQL 15 · Streamlit · Plotly · 8 SQL models in analytics schema")
+st.caption(
+    "Data: realistic synthetic B2B SaaS simulation — not real company data. "
+    "Stack: Python · PostgreSQL · Streamlit · Plotly"
+)
