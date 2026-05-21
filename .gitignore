@@ -1,0 +1,61 @@
+# Environment variables
+.env
+
+# Python Caches & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Package Distribution / Build
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Project Specific Data Caches
+data/synthetic/*.csv
+data/processed/*.csv
+data/raw/*.csv
+data/synthetic/*.json
+data/processed/*.json
+data/raw/*.json
+
+# Logs
+*.log
