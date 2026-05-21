@@ -1,16 +1,14 @@
-# Core B2B SaaS Analytics & Intelligence Platform dependencies
-
-# Data Generation
-faker==24.0.0
-numpy==1.26.4
-pandas==2.2.1
-python-dateutil==2.9.0
-
-# Database Access & Loader
-psycopg2-binary==2.9.9
-sqlalchemy==2.0.28
-python-dotenv==1.0.1
-
-# Streamlit App & Interactive Analytics Dashboard
+# ── Streamlit dashboard (Streamlit Cloud reads this at repo root) ──────────
 streamlit>=1.35.0
 plotly>=5.22.0
+sqlalchemy>=2.0.28
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.1
+
+# ── Data layer ──────────────────────────────────────────────────────────────
+pandas>=2.2.0
+numpy>=1.26.0
+
+# ── Data generation (local dev) ─────────────────────────────────────────────
+faker>=24.0.0
+python-dateutil>=2.9.0
