@@ -299,7 +299,7 @@ psql postgresql://saas_user:saas_pass@localhost:5433/saas_platform \
   -f sql/analytics/99_run_all_analytics.sql
 
 # 8. Run the dashboard
-streamlit run "dashboards/🏠_Home.py"
+streamlit run dashboards/streamlit_app.py
 # Opens at http://localhost:8501
 ```
 
@@ -324,7 +324,7 @@ Then set `DATABASE_URL` in your Streamlit Cloud app secrets.
 3. Run `bash scripts/setup_cloud_db.sh` with your Neon URL
 4. Deploy to [share.streamlit.io](https://share.streamlit.io):
    - **Repository:** `your-username/saas-revenue-churn-intelligence`
-   - **Main file path:** `dashboards/🏠_Home.py`
+   - **Main file path:** `dashboards/streamlit_app.py`
 5. Add your database URL under **Settings → Secrets**:
    ```toml
    DATABASE_URL = "postgresql://..."
@@ -344,7 +344,7 @@ saas-revenue-churn-intelligence/
 │   │   ├── 03_Churn_Analysis.py
 │   │   ├── 04_Cohort_Retention.py
 │   │   └── 05_Customer_Health.py
-│   ├── 🏠_Home.py                # Home page / entry point
+│   ├── streamlit_app.py          # Home page / entry point
 │   ├── db.py                     # Connection chain (secrets → .env → default)
 │   └── style.py                  # Color tokens + Plotly layout factory
 │
