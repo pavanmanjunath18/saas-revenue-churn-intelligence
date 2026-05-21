@@ -415,39 +415,6 @@ saas-revenue-churn-intelligence/
 
 ---
 
-## Resume Bullets
-
-### For Analytics Engineer / Data Engineer roles
-- Engineered a PostgreSQL analytics layer modeling subscription revenue for 1,500 B2B SaaS accounts — implemented MRR movement classification (new/expansion/contraction/churn/reactivation) using SQL window functions and customer-specific date spine logic to compute industry-standard NRR (102.2%) and GRR (97.6%)
-- Built a topologically ordered SQL build pipeline (8 models, 3 VIEWs + 5 MATERIALIZED VIEWs) transforming 50K+ raw billing events into decision-ready metrics; validated with 23 automated data quality assertions
-- Deployed a full analytics stack (PostgreSQL on Neon + Streamlit Cloud) with environment-agnostic connection management supporting local Docker, .env, and Streamlit secrets configuration
-
-### For Data Analyst roles
-- Designed and deployed a 5-page interactive analytics dashboard (Streamlit + Plotly) surfacing MRR growth, churn patterns, cohort retention triangles, and customer health risk scores for 1,100+ active accounts
-- Developed a composite customer health scoring model (0–100) weighted across 5 behavioral signals — usage trends, payment history, support load, tenure, and feature adoption — to proactively identify at-risk accounts
-- Produced quantitative insights from 24-month B2B SaaS simulation: identified 28pp retention gap between enterprise and SMB cohorts at month 12, and correlated payment failure rate with churn probability
-
-### For Data Scientist roles
-- Built a weighted multi-factor scoring system for B2B SaaS customer health, combining usage telemetry, payment behavior, and support signal features into a continuous 0–100 risk score with validated tier separation
-- Implemented cohort retention analysis across 24 monthly cohorts tracking customer survival curves from month 0 through month 12, revealing M3 retention of 90.2% and M12 retention of 65.2%
-- Designed a synthetic behavioral data generator with correlated variables — cancellation probability, usage level, and support ticket frequency are co-determined by segment and payment history, producing statistically realistic churn patterns
-
----
-
-## Interview Talking Points
-
-**30-second version:**
-> "I built an end-to-end subscription analytics platform that solves a real problem in SaaS: raw billing data is event-sourced and you can't answer basic revenue questions directly from it. I built a PostgreSQL analytics layer that classifies every customer-month into a movement type — new, expansion, contraction, or churn — and uses that to compute NRR, cohort retention, and customer health scores. It's deployed live on Streamlit Cloud."
-
-**2-minute technical version:**
-> "The core technical challenge is what I'd call the subscription ledger problem. Stripe gives you invoice events. But to compute MRR, you need point-in-time snapshots. To compute NRR, you need to compare two consecutive monthly snapshots per customer and classify the delta. My `mrr_movement_report` model solves this using a customer-specific date spine — not a global one, because that causes false reactivation events — and LAG window functions to compare adjacent months. Each row gets classified into one of six mutually exclusive movement types. Everything else — monthly revenue overview, NRR, GRR — derives from that one model.
->
-> For customer health, I built a weighted composite score across five independently sourced signals: usage from the product telemetry table, payment health from invoices and payment attempts, support load from ticket volume and priority, tenure from subscription start date, and feature breadth from distinct features used per month. The weights (30/25/20/15/10) are defensible but also configurable — that's a design choice I'd articulate in an interview.
->
-> The whole thing is deployed on Streamlit Cloud connected to Neon PostgreSQL, with a GitHub Actions CI pipeline that runs syntax checks and data generation on every push."
-
----
-
 ## License
 
 MIT License — see [LICENSE](LICENSE) for details.
