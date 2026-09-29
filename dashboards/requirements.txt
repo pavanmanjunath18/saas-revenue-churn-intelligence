@@ -1,6 +1,8 @@
-streamlit>=1.35.0
-plotly>=5.22.0
-pandas>=2.0.0
-psycopg2-binary>=2.9.9
-sqlalchemy>=2.0.0
-python-dotenv>=1.0.0
+# Streamlit Cloud installs this file (it sits next to the entrypoint, Home.py).
+# Upper bounds keep a cold-start rebuild from silently pulling breaking majors.
+streamlit>=1.50,<2
+plotly>=5.22,<7
+pandas>=2.2,<3
+psycopg2-binary>=2.9.10,<3
+sqlalchemy>=2.0.28,<2.2
+python-dotenv>=1.0,<2

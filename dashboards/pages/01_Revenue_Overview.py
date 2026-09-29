@@ -36,9 +36,10 @@ churn_d = latest.customer_churn_rate_pct - prev.customer_churn_rate_pct
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("MRR", f"${latest.total_mrr_usd:,.0f}", f"${mrr_d:+,.0f}")
 c2.metric("ARR", f"${latest.arr_usd:,.0f}")
-c3.metric("NRR", f"{latest.nrr_pct:.1f}%", f"{nrr_d:+.1f}pp")
-c4.metric("GRR", f"{latest.grr_pct:.1f}%", f"{grr_d:+.1f}pp")
-c5.metric("Churn Rate", f"{latest.customer_churn_rate_pct:.2f}%", f"{churn_d:+.2f}pp")
+c3.metric("Monthly NRR", f"{latest.nrr_pct:.1f}%", f"{nrr_d:+.1f}pp")
+c4.metric("Monthly GRR", f"{latest.grr_pct:.1f}%", f"{grr_d:+.1f}pp")
+c5.metric("Churn Rate", f"{latest.customer_churn_rate_pct:.2f}%", f"{churn_d:+.2f}pp",
+          delta_color="inverse")
 
 st.divider()
 
@@ -65,20 +66,26 @@ lay = chart_layout(height=300)
 lay.update({"showlegend": True,
             "yaxis":  {**lay.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"},
             "yaxis2": {"showgrid": False, "tickfont": dict(size=11, color=C["text_faint"]),
-                       "zeroline": False}})
+                       "zeroline": False, "rangemode": "tozero", "tickformat": ",d",
+                       "title": dict(text="Customers", font=dict(size=11, color=C["text_faint"]))}})
 fig_mrr.update_layout(**lay)
-st.plotly_chart(fig_mrr, use_container_width=True)
+st.plotly_chart(fig_mrr, width="stretch")
 
-mrr_growth = (df.iloc[-1].total_mrr_usd / df.iloc[0].total_mrr_usd - 1) * 100
-st.info(f"MRR grew **{mrr_growth:.0f}%** over the 24-month period, "
-        f"from **${df.iloc[0].total_mrr_usd:,.0f}** to **${df.iloc[-1].total_mrr_usd:,.0f}**.")
+# Year-over-year: month 1 is the launch month (a handful of customers), so
+# growth measured from it is meaningless.
+year_ago = df.iloc[-13]
+mrr_growth = (latest.total_mrr_usd / year_ago.total_mrr_usd - 1) * 100
+st.info(f"MRR grew **{mrr_growth:.0f}%** year-over-year, "
+        f"from **\\${year_ago.total_mrr_usd:,.0f}** ({year_ago.month}) to "
+        f"**\\${latest.total_mrr_usd:,.0f}** ({latest.month}).")
 
 # ── NRR / GRR ─────────────────────────────────────────────────────────────────
 col_l, col_r = st.columns(2)
 
 with col_l:
-    st.subheader("Net & Gross Revenue Retention")
-    st.caption("NRR > 100% signals expansion outpaces churn. GRR excludes upsell.")
+    st.subheader("Net & Gross Revenue Retention (monthly)")
+    st.caption("One-month retention of beginning MRR. GRR excludes upsell. "
+               "Compounded over 12 months these are far wider than they look.")
     fig_ret = go.Figure()
     fig_ret.add_trace(go.Scatter(
         x=df["month"], y=df["nrr_pct"], name="NRR",
@@ -98,7 +105,7 @@ with col_l:
     lay2.update({"showlegend": True,
                  "yaxis": {**lay2.get("yaxis", {}), "ticksuffix": "%", "range": [85, 115]}})
     fig_ret.update_layout(**lay2)
-    st.plotly_chart(fig_ret, use_container_width=True)
+    st.plotly_chart(fig_ret, width="stretch")
 
 with col_r:
     st.subheader("MRR by Customer Segment")
@@ -118,11 +125,14 @@ with col_r:
     lay3.update({"barmode": "stack", "showlegend": True,
                  "yaxis": {**lay3.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"}})
     fig_seg.update_layout(**lay3)
-    st.plotly_chart(fig_seg, use_container_width=True)
+    st.plotly_chart(fig_seg, width="stretch")
 
-st.info(f"NRR averaged **{df.nrr_pct.mean():.1f}%** across the period — consistently above 100%, "
-        f"meaning expansion revenue outweighs churn. "
-        f"GRR averaged **{df.grr_pct.mean():.1f}%**, reflecting strong base retention before upsell effects.")
+nrr_12 = ((df.nrr_pct.tail(12) / 100).prod()) * 100
+grr_12 = ((df.grr_pct.tail(12) / 100).prod()) * 100
+st.info(f"Monthly NRR averaged **{df.nrr_pct.mean():.1f}%** and monthly GRR **{df.grr_pct.mean():.1f}%**. "
+        f"Compounded over the last 12 months that is roughly **{nrr_12:.0f}% NRR** and "
+        f"**{grr_12:.0f}% GRR**: expansion more than offsets churn, but the business loses about "
+        f"{100 - grr_12:.0f}% of its starting revenue base each year before upsell.")
 
 # ── ARPA + churn ──────────────────────────────────────────────────────────────
 col3, col4 = st.columns(2)
@@ -138,7 +148,7 @@ with col3:
     lay4 = chart_layout(height=260)
     lay4.update({"yaxis": {**lay4.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"}})
     fig_arpa.update_layout(**lay4)
-    st.plotly_chart(fig_arpa, use_container_width=True)
+    st.plotly_chart(fig_arpa, width="stretch")
 
 with col4:
     st.subheader("Monthly Customer Churn Rate")
@@ -158,4 +168,4 @@ with col4:
     lay5 = chart_layout(height=260)
     lay5.update({"yaxis": {**lay5.get("yaxis", {}), "ticksuffix": "%"}})
     fig_churn.update_layout(**lay5)
-    st.plotly_chart(fig_churn, use_container_width=True)
+    st.plotly_chart(fig_churn, width="stretch")

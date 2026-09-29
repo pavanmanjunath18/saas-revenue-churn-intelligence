@@ -94,13 +94,13 @@ lay.update({"barmode": "relative", "showlegend": True,
             "yaxis": {**lay.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"}})
 fig.add_hline(y=0, line_color=C["border"], line_width=1)
 fig.update_layout(**lay)
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 net_pos_months = (dff["net_new_mrr_usd"] > 0).sum()
 st.info(f"**{net_pos_months} of {len(dff)} months** show positive net new MRR. "
-        f"New customer revenue (${total_new:,.0f}) is the primary growth driver, "
-        f"with expansion (**${total_exp:,.0f}**) providing a meaningful secondary contribution. "
-        f"Churn (**${total_churn:,.0f}**) is the largest drag.")
+        f"New customer revenue (\\${total_new:,.0f}) is the primary growth driver, "
+        f"with expansion (**\\${total_exp:,.0f}**) providing a meaningful secondary contribution. "
+        f"Churn (**\\${total_churn:,.0f}**) is the largest drag.")
 
 # ── Customer count movement ───────────────────────────────────────────────────
 st.subheader("Customer Count Movement")
@@ -122,7 +122,7 @@ fig2.add_hline(y=0, line_color=C["border"], line_width=1)
 lay3 = chart_layout(height=280)
 lay3.update({"barmode": "relative", "showlegend": True})
 fig2.update_layout(**lay3)
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig2, width="stretch")
 
 # ── Monthly detail table ──────────────────────────────────────────────────────
 with st.expander("Monthly breakdown — detailed table"):
@@ -138,5 +138,5 @@ with st.expander("Monthly breakdown — detailed table"):
     fmt = {c: "${:,.0f}" for c in display.columns if c != "Month"}
     st.dataframe(
         display.sort_values("Month", ascending=False).style.format(fmt),
-        use_container_width=True, hide_index=True,
+        width="stretch", hide_index=True,
     )

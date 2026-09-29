@@ -82,7 +82,7 @@ with col_l:
     lay = chart_layout(height=280)
     lay.update({"yaxis": {**lay.get("yaxis", {}), "ticksuffix": "%"}})
     fig1.update_layout(**lay)
-    st.plotly_chart(fig1, use_container_width=True)
+    st.plotly_chart(fig1, width="stretch")
 
 with col_r:
     st.subheader("Monthly Churned MRR")
@@ -95,7 +95,7 @@ with col_r:
     lay2 = chart_layout(height=280)
     lay2.update({"yaxis": {**lay2.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"}})
     fig2.update_layout(**lay2)
-    st.plotly_chart(fig2, use_container_width=True)
+    st.plotly_chart(fig2, width="stretch")
 
 # ── Churn by segment ──────────────────────────────────────────────────────────
 st.subheader("Churned MRR by Segment")
@@ -120,7 +120,7 @@ lay3 = chart_layout(height=300)
 lay3.update({"barmode": "stack", "showlegend": True,
              "yaxis": {**lay3.get("yaxis", {}), "tickprefix": "$", "tickformat": ",.0f"}})
 fig3.update_layout(**lay3)
-st.plotly_chart(fig3, use_container_width=True)
+st.plotly_chart(fig3, width="stretch")
 
 # ── Industry + plan breakdown ─────────────────────────────────────────────────
 col3, col4 = st.columns(2)
@@ -143,7 +143,7 @@ with col3:
         "margin": {**lay4.get("margin", {}), "l": 120},
     })
     fig4.update_layout(**lay4)
-    st.plotly_chart(fig4, use_container_width=True)
+    st.plotly_chart(fig4, width="stretch")
 
 with col4:
     st.subheader("Churn Distribution by Segment")
@@ -166,11 +166,19 @@ with col4:
         showlegend=False,
         font=dict(family="sans-serif", color=C["text_muted"]),
     )
-    st.plotly_chart(fig5, use_container_width=True)
+    st.plotly_chart(fig5, width="stretch")
 
-st.info("SMB segment accounts for the majority of churn events, though enterprise churn "
-        "carries higher MRR impact per event. Monitoring high-MRR accounts (> $500 MRR) "
-        "proactively reduces revenue exposure.")
+seg_stats = churned.groupby("segment").agg(events=("customer_id", "count"),
+                                           lost=("lost_mrr_usd", "sum"))
+seg_stats["per_event"] = seg_stats["lost"] / seg_stats["events"]
+top_events = seg_stats["events"].idxmax()
+top_per    = seg_stats["per_event"].idxmax()
+nice = lambda s: s.replace("_", " ").title()
+st.info(f"**{nice(top_events)}** accounts for "
+        f"**{seg_stats.loc[top_events, 'events'] / seg_stats['events'].sum():.0%}** of churn events, "
+        f"while **{nice(top_per)}** loses the most per event "
+        f"(**\\${seg_stats.loc[top_per, 'per_event']:,.0f}** MRR vs "
+        f"\\${seg_stats['per_event'].min():,.0f} for the lowest segment).")
 
 # ── Largest churned accounts ──────────────────────────────────────────────────
 st.subheader("Largest Churned Accounts")
@@ -184,5 +192,5 @@ st.dataframe(
     })
     .head(20)
     .style.format({"MRR Lost ($)": "${:,.2f}"}),
-    use_container_width=True, hide_index=True,
+    width="stretch", hide_index=True,
 )

@@ -34,7 +34,7 @@ jobs:
 
       - name: Syntax check — dashboard
         run: |
-          python -m py_compile dashboards/streamlit_app.py
+          python -m py_compile dashboards/Home.py
           python -m py_compile dashboards/db.py
           python -m py_compile dashboards/style.py
           python -m py_compile dashboards/pages/01_Revenue_Overview.py

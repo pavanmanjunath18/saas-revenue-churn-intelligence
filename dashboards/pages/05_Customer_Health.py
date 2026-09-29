@@ -79,7 +79,7 @@ with col_l:
     fig_hist = go.Figure(go.Histogram(
         x=health["health_score"], nbinsx=20,
         marker_color=C["accent"], marker_line_width=0, opacity=0.8,
-        hovertemplate="Score %{x}–%{x}: %{y} customers<extra></extra>",
+        hovertemplate="Score %{x}: %{y} customers<extra></extra>",
     ))
     for boundary, tier_color, label in [
         (30, C["red"],   "Critical"), (50, C["amber"], "High"),
@@ -98,7 +98,7 @@ with col_l:
                 "yaxis": {**lay.get("yaxis", {}),
                            "title": dict(text="Accounts", font=dict(size=11, color=C["text_muted"]))}})
     fig_hist.update_layout(**lay)
-    st.plotly_chart(fig_hist, use_container_width=True)
+    st.plotly_chart(fig_hist, width="stretch")
 
 with col_r:
     st.subheader("Risk Tier Distribution")
@@ -126,7 +126,7 @@ with col_r:
                           x=0.5, y=0.5, font_size=12, showarrow=False,
                           font_color=C["text"])],
     )
-    st.plotly_chart(fig_pie, use_container_width=True)
+    st.plotly_chart(fig_pie, width="stretch")
 
 # ── Health score vs MRR scatter ───────────────────────────────────────────────
 st.subheader("Health Score vs MRR")
@@ -175,7 +175,7 @@ lay2.update({
               "tickprefix": "$", "tickformat": ",.0f"},
 })
 fig_scatter.update_layout(**lay2)
-st.plotly_chart(fig_scatter, use_container_width=True)
+st.plotly_chart(fig_scatter, width="stretch")
 
 st.info("Accounts in the **lower-left quadrant** (low health, high MRR) represent "
         "the highest business risk — significant revenue with leading churn indicators. "
@@ -196,11 +196,17 @@ with col_pick:
     if seg_opt  != "All": filt = filt[filt["segment"]   == seg_opt]
     if tier_opt != "All": filt = filt[filt["risk_tier"] == tier_opt]
 
-    names = filt.sort_values("health_score")["company_name"].tolist()
+    # Select by customer_id: company names are not unique (Faker reuses them).
+    filt = filt.sort_values("health_score")
+    names = filt["customer_id"].tolist()
+    labels = dict(zip(filt["customer_id"],
+                      filt["company_name"] + " · " + filt["segment"] + " · $"
+                      + filt["mrr_usd"].map("{:,.0f}".format)))
     if names:
-        sel_name = st.selectbox("Account", names)
-        row  = health[health["company_name"] == sel_name].iloc[0]
-        rrow = risk[risk["company_name"]     == sel_name].iloc[0]
+        sel_id   = st.selectbox("Account", names, format_func=labels.get)
+        row      = health[health["customer_id"] == sel_id].iloc[0]
+        rrow     = risk[risk["customer_id"]     == sel_id].iloc[0]
+        sel_name = row.company_name
 
         tier_color = TIER_COLORS.get(rrow.risk_tier, C["accent"])
         st.markdown(f"**{sel_name}**")
@@ -208,7 +214,7 @@ with col_pick:
         st.markdown(f"Health: **{row.health_score:.1f}** &nbsp; "
                     f"<span style='color:{tier_color}'>{rrow.risk_tier.upper()}</span>",
                     unsafe_allow_html=True)
-        st.markdown(f"MRR: **${row.mrr_usd:,.2f}** / month")
+        st.markdown(f"MRR: **\\${row.mrr_usd:,.2f}** / month")
         st.info(rrow.recommended_action)
     else:
         st.info("No accounts match the selected filters.")
@@ -254,7 +260,7 @@ with col_radar:
             title=dict(text=f"Score breakdown — {sel_name}",
                        font=dict(size=13, color=C["text"]), x=0.5, xanchor="center"),
         )
-        st.plotly_chart(fig_radar, use_container_width=True)
+        st.plotly_chart(fig_radar, width="stretch")
 
 # ── At-risk accounts table ────────────────────────────────────────────────────
 st.divider()
@@ -262,7 +268,7 @@ at_risk_df = risk[risk["risk_tier"].isin(["critical", "high"])].copy()
 
 st.subheader(f"High & Critical Risk Accounts")
 st.caption(f"{len(at_risk_df)} account{'s' if len(at_risk_df) != 1 else ''} requiring immediate attention — "
-           f"${at_risk_mrr:,.0f} in combined MRR.")
+           f"\\${at_risk_mrr:,.0f} in combined MRR.")
 
 if at_risk_df.empty:
     st.success("No accounts are currently in the critical or high risk tier.")
@@ -291,5 +297,5 @@ else:
             "recommended_action": "Action",
         })
         .style.format({"MRR ($)": "${:,.2f}", "Health": "{:.1f}"}),
-        use_container_width=True, hide_index=True,
+        width="stretch", hide_index=True,
     )
