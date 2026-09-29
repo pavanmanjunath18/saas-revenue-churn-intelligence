@@ -8,7 +8,7 @@
 --   payment_health 25% — invoice payment rate (last 6 months of data)
 --   support_calm   20% — absence of recent high-severity open tickets
 --   tenure         15% — months active (longer = more stable)
---   feature_depth  10% — breadth of features used recently
+--   feature_depth  10% — breadth of features used recently (25 features = 100)
 --
 -- Reference point: MAX(month) in product_usage (avoids CURRENT_DATE
 -- falling outside the simulated data range).
@@ -35,6 +35,24 @@ active_subs AS (
     WHERE status = 'active'
       AND product_id = '00000000-0000-0000-0000-000000000001'
     ORDER BY customer_id, started_at DESC
+),
+
+-- ── Customer tenure: from FIRST core subscription (upgrades create new
+--    subscription rows, so the active row's started_at would reset tenure) ──
+first_core AS (
+    SELECT customer_id, MIN(started_at)::date AS first_started_at
+    FROM raw.subscriptions
+    WHERE product_id = '00000000-0000-0000-0000-000000000001'
+    GROUP BY customer_id
+),
+tenure AS (
+    SELECT
+        fc.customer_id,
+        -- Total whole months. DATE_PART('month', AGE(...)) alone would return
+        -- only the 0–11 month component of the interval.
+        (DATE_PART('year',  AGE(ref.latest_month, fc.first_started_at)) * 12
+       + DATE_PART('month', AGE(ref.latest_month, fc.first_started_at)))::int AS tenure_months
+    FROM first_core fc CROSS JOIN ref
 ),
 
 -- ── Usage trend: recent 3 months vs prior 3 months ──
@@ -131,19 +149,17 @@ scored AS (
         ))::numeric                                           AS support_score,
 
         -- Tenure score (15%): ~5 pts/month, capped at 100 at 20 months
-        LEAST(100, GREATEST(0,
-            5 * DATE_PART('month', AGE(
-                (SELECT latest_month FROM ref),
-                ac.started_at::date
-            ))
-        ))::numeric                                           AS tenure_score,
+        LEAST(100, GREATEST(0, 5 * t.tenure_months))::numeric AS tenure_score,
+        t.tenure_months,
 
-        -- Feature depth score (10%): up to 5 distinct feature types
+        -- Feature depth score (10%): 25 features used = 100
+        -- (feature counts in product_usage range ~1–30)
         LEAST(100, GREATEST(0,
-            COALESCE(ur.recent_features, 0) * 20
+            COALESCE(ur.recent_features, 0) * 4
         ))::numeric                                           AS feature_score
 
     FROM active_subs ac
+    JOIN tenure             t  ON ac.customer_id = t.customer_id
     LEFT JOIN usage_recent  ur ON ac.customer_id = ur.customer_id
     LEFT JOIN usage_prior   up ON ac.customer_id = up.customer_id
     LEFT JOIN payment_health ph ON ac.customer_id = ph.customer_id
@@ -175,11 +191,8 @@ SELECT
         0.10 * s.feature_score,
     1)                                                     AS health_score,
 
-    -- Months on platform
-    DATE_PART('month', AGE(
-        (SELECT latest_month FROM ref),
-        s.started_at::date
-    ))::int                                                AS tenure_months
+    -- Months on platform (since first core subscription)
+    s.tenure_months
 
 FROM scored s
 JOIN raw.customers c  ON s.customer_id = c.customer_id

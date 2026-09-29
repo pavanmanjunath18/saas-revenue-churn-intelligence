@@ -48,10 +48,11 @@ c1.metric("Monthly Recurring Revenue", f"${latest.total_mrr_usd:,.0f}",
 c2.metric("Annual Run Rate", f"${latest.arr_usd:,.0f}")
 c3.metric("Active Customers", f"{int(latest.active_customers):,}",
           f"{int(latest.active_customers - prev.active_customers):+} vs prior month")
-c4.metric("Net Revenue Retention", f"{latest.nrr_pct:.1f}%",
+c4.metric("Net Revenue Retention (monthly)", f"{latest.nrr_pct:.1f}%",
           f"{latest.nrr_pct - prev.nrr_pct:+.1f}pp vs prior month")
 c5.metric("Monthly Churn Rate", f"{latest.customer_churn_rate_pct:.2f}%",
-          f"{latest.customer_churn_rate_pct - prev.customer_churn_rate_pct:+.2f}pp vs prior month")
+          f"{latest.customer_churn_rate_pct - prev.customer_churn_rate_pct:+.2f}pp vs prior month",
+          delta_color="inverse")
 
 st.divider()
 
@@ -82,7 +83,7 @@ if high_risk > 0:
     """).iloc[0]["total"]
     st.warning(
         f"**{high_risk} customers** are in the high or critical risk tier, "
-        f"representing **${at_risk_mrr:,.0f}** in MRR at risk. "
+        f"representing **\\${at_risk_mrr:,.0f}** in MRR at risk. "
         f"Review the Customer Health page for recommended actions."
     )
 

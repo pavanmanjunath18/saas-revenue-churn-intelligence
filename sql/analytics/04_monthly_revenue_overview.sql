@@ -13,6 +13,8 @@
 --   Expansion — incremental revenue from upgrades
 --   Contraction — lost revenue from downgrades (not churn)
 --   Churned MRR — revenue lost to full cancellation
+--   NRR/GRR are MONTHLY rates (one-month window), not the trailing-12-month
+--   figures usually quoted as "NRR". Annualise before comparing to benchmarks.
 --   NRR       — (beginning_mrr + expansion - contraction - churn) / beginning_mrr × 100
 --   GRR       — (beginning_mrr - contraction - churn) / beginning_mrr × 100
 --               (always ≤ 100; excludes expansion)
@@ -59,6 +61,10 @@ monthly_components AS (
         -- Customer counts
         COUNT(DISTINCT CASE WHEN current_mrr_cents > 0 THEN customer_id END)
             AS active_customers,
+        -- Customers paying at the start of the month (churn-rate denominator)
+        COUNT(DISTINCT CASE WHEN movement_type IN ('unchanged','expansion','contraction','churned')
+                            THEN customer_id END)
+            AS beginning_customers,
         COUNT(DISTINCT CASE WHEN movement_type = 'new'          THEN customer_id END)
             AS new_customers,
         COUNT(DISTINCT CASE WHEN movement_type = 'expansion'    THEN customer_id END)
@@ -126,10 +132,10 @@ SELECT
          ELSE NULL
     END                                           AS grr_pct,
 
-    -- Churn rate: churned customers / beginning active customers
-    CASE WHEN mc.active_customers + mc.churned_customers > 0
-         THEN ROUND(100.0 * mc.churned_customers
-                  / (mc.active_customers + mc.churned_customers), 2)
+    -- Churn rate: churned customers / customers active at the start of the month
+    -- (new customers acquired this month are not in the denominator)
+    CASE WHEN mc.beginning_customers > 0
+         THEN ROUND(100.0 * mc.churned_customers / mc.beginning_customers, 2)
          ELSE NULL
     END                                           AS customer_churn_rate_pct,
 

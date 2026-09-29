@@ -100,7 +100,7 @@ fig_heat.update_layout(
     yaxis=dict(autorange="reversed", tickfont=dict(size=11, color=C["text_muted"]),
                showgrid=False, zeroline=False),
 )
-st.plotly_chart(fig_heat, use_container_width=True)
+st.plotly_chart(fig_heat, width="stretch")
 
 st.info(f"Cohort retention stabilises significantly after month 6. "
         f"Average M3 retention of **{avg_m3:.1f}%** indicates strong early-stage product stickiness. "
@@ -136,7 +136,7 @@ with col_l:
                                 font=dict(size=11, color=C["text_muted"]))},
     })
     fig_curve.update_layout(**lay)
-    st.plotly_chart(fig_curve, use_container_width=True)
+    st.plotly_chart(fig_curve, width="stretch")
 
 with col_r:
     st.subheader("Cohort Sizes")
@@ -155,7 +155,7 @@ with col_r:
                             "title": dict(text="Customers",
                                           font=dict(size=11, color=C["text_muted"]))}})
     fig_size.update_layout(**lay2)
-    st.plotly_chart(fig_size, use_container_width=True)
+    st.plotly_chart(fig_size, width="stretch")
 
 # ── Single-period snapshot ─────────────────────────────────────────────────────
 st.divider()
@@ -180,4 +180,4 @@ if not snap.empty:
     lay3 = chart_layout(height=260)
     lay3.update({"yaxis": {**lay3.get("yaxis", {}), "ticksuffix": "%", "range": [0, 105]}})
     fig_snap.update_layout(**lay3)
-    st.plotly_chart(fig_snap, use_container_width=True)
+    st.plotly_chart(fig_snap, width="stretch")

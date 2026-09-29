@@ -4,7 +4,7 @@
 
 Built to answer the questions every B2B SaaS company needs answered: How is MRR growing? Where is revenue being lost? Which customers are at risk of churning?
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit%20Cloud-FF4B4B?logo=streamlit)](https://saas-revenue-intelligence.streamlit.app)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit%20Cloud-FF4B4B?logo=streamlit)](https://saas-revenue-churn-intelligence.streamlit.app)
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.35%2B-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io)
@@ -43,12 +43,12 @@ Answering these requires an **analytics layer** that translates discrete billing
 | Peak MRR | **$792,484** | Dec 2025, grown from $0 at Jan 2024 launch |
 | ARR | **$9.5M** | 24-month run rate |
 | Active Customers | **1,149** | Across SMB, mid-market, enterprise |
-| Net Revenue Retention | **102.2% avg** | Expansion outpaces churn consistently |
-| Gross Revenue Retention | **97.6% avg** | Strong base retention before upsell |
-| Avg Monthly Churn Rate | **2.58%** | 351 churn events over 24 months |
+| Net Revenue Retention (monthly) | **102.2% avg** | ≈128% compounded over 12 months — expansion outpaces churn |
+| Gross Revenue Retention (monthly) | **97.6% avg** | ≈75% compounded — ~25% of the revenue base lost per year before upsell |
+| Avg Monthly Churn Rate | **3.20%** | 351 churn events; denominator = customers active at start of month |
 | M3 Cohort Retention | **90.2%** | Strong early-stage stickiness |
 | M12 Cohort Retention | **65.2%** | Meaningful long-tail decay |
-| Avg Health Score | **76.8 / 100** | Weighted composite across 1,108 active accounts |
+| Avg Health Score | **74.4 / 100** | Weighted composite across 1,108 active accounts |
 
 ---
 
@@ -206,7 +206,7 @@ The `mrr_movement_report` is the most technically sophisticated model. For each 
 |--------|---------|----------------|
 | **MRR** | Sum of monthly-normalized active subscription values | `mrr_movement_report` → `monthly_revenue_overview` |
 | **ARR** | MRR × 12 | `monthly_revenue_overview` |
-| **Net Revenue Retention (NRR)** | (Beginning MRR + Expansion − Contraction − Churn) / Beginning MRR | `monthly_revenue_overview` |
+| **Net Revenue Retention (NRR)** | (Beginning MRR + Expansion − Contraction − Churn) / Beginning MRR, **one-month window** | `monthly_revenue_overview` |
 | **Gross Revenue Retention (GRR)** | NRR capped at 100% (no expansion credit) | `monthly_revenue_overview` |
 | **ARPA** | MRR / Active customers | `monthly_revenue_overview` |
 | **Customer Churn Rate** | Churned customers / Prior month active customers | `monthly_revenue_overview` |
@@ -299,7 +299,7 @@ psql postgresql://saas_user:saas_pass@localhost:5433/saas_platform \
   -f sql/analytics/99_run_all_analytics.sql
 
 # 8. Run the dashboard
-streamlit run dashboards/streamlit_app.py
+streamlit run dashboards/Home.py
 # Opens at http://localhost:8501
 ```
 
@@ -324,7 +324,7 @@ Then set `DATABASE_URL` in your Streamlit Cloud app secrets.
 3. Run `bash scripts/setup_cloud_db.sh` with your Neon URL
 4. Deploy to [share.streamlit.io](https://share.streamlit.io):
    - **Repository:** `your-username/saas-revenue-churn-intelligence`
-   - **Main file path:** `dashboards/streamlit_app.py`
+   - **Main file path:** `dashboards/Home.py`
 5. Add your database URL under **Settings → Secrets**:
    ```toml
    DATABASE_URL = "postgresql://..."
@@ -344,7 +344,7 @@ saas-revenue-churn-intelligence/
 │   │   ├── 03_Churn_Analysis.py
 │   │   ├── 04_Cohort_Retention.py
 │   │   └── 05_Customer_Health.py
-│   ├── streamlit_app.py          # Home page / entry point
+│   ├── Home.py                   # Home page / entry point
 │   ├── db.py                     # Connection chain (secrets → .env → default)
 │   └── style.py                  # Color tokens + Plotly layout factory
 │

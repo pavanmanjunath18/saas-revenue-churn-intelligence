@@ -35,11 +35,14 @@ def _get_db_url() -> str:
 
 
 def _clean_url(url: str) -> str:
-    """Strip query parameters unsupported by psycopg2 (e.g. channel_binding)."""
+    """Strip query parameters unsupported by psycopg2 (e.g. channel_binding)
+    and pin the psycopg2 driver explicitly — SQLAlchemy 2.1 made psycopg (v3)
+    the default for bare postgresql:// URLs."""
     url = re.sub(r"[?&]channel_binding=[^&]*", "", url)
     # Fix any dangling ? or & left after removal
     url = re.sub(r"\?&", "?", url)
     url = re.sub(r"[?&]$", "", url)
+    url = re.sub(r"^postgres(ql)?://", "postgresql+psycopg2://", url)
     return url
 
 

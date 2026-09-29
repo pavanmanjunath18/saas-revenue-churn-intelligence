@@ -11,7 +11,7 @@ This guide serves as a manual for business stakeholders, executive sponsors, and
 To launch the dashboard locally, make sure you have loaded the synthetic data and compiled the analytics models (see [Database Setup Guide](database_setup.md)). Then, run:
 
 ```bash
-streamlit run dashboards/streamlit_app.py
+streamlit run dashboards/Home.py
 ```
 
 The app will open automatically in your default browser at `http://localhost:8501`.
